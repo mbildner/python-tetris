@@ -1,6 +1,3 @@
-# from collections import namedtuple
-# _Tetromino = namedtuple('_Tetromino', 'rotations current x y')
-
 class _Tetromino(object):
     def __init__(self, rotations, current, x, y):
         self.rotations = rotations
