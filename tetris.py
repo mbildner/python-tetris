@@ -36,7 +36,10 @@ class Tetris(object):
         for row in self.combine_game_state():
             output += "\n"
             for col in row:
-                output += str(col)
+                if col:
+                    output += 'o'
+                else: output += " "
+                # output += str(col)
                 output += " "
 
         return output
