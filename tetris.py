@@ -1,10 +1,18 @@
 from tetromino import Tetromino
 from random import randrange
+from time import sleep
 from copy import deepcopy
+import json
 import os
 
 class Tetris(object):   
     def __init__(self):
+        self.board = self.empty_board()
+        self.piece = self.random_piece()
+        self.lines_scored = []
+        self.is_running = True
+
+    def empty_board(self):
         board = []
         for y in range(20):
             row = []
@@ -12,8 +20,7 @@ class Tetris(object):
                 row.append(0)
             board.append(row)
 
-        self.board = board
-        self.piece = self.get_random_piece()
+        return board
 
     def print_board(self):
         piece_indices = []
@@ -41,10 +48,21 @@ class Tetris(object):
                 if col == 1:
                     self.board[row_i + self.piece.y][col_i + self.piece.x] = 1
 
-        self.piece = self.get_random_piece()
+        lines_cleared = 0
+        for row_i, row in enumerate(self.board):
+            if all(col == 1 for col in row):
+                lines_cleared += 1
+                self.board.pop()
+                self.board.insert(0, [0 for _ in range(10)])
 
 
-    def get_random_piece(self):
+        if lines_cleared:
+            self.lines_scored.append(lines_cleared)
+
+        self.piece = self.random_piece()
+
+
+    def random_piece(self):
         p = randrange(0, 7)
 
         if p == 0:
@@ -94,20 +112,16 @@ class Tetris(object):
 
         return True
 
+    def end_game(self):
+        score = sum(self.lines_scored)
 
-    def up(self):
-        return self.__move_piece__('up')
-    
-    def left(self):
-        return self.__move_piece__('left')
+        self.is_running = False
+        self.board = self.empty_board()
+        self.piece = self.random_piece()
+        self.lines_scored = []
 
-    def right(self):
-        return self.__move_piece__('right')
 
-    def down(self):
-        self.__move_piece__('down')
-
-    def __move_piece__(self, direction):
+    def move_piece(self, direction):
         x, y = self.piece.x, self.piece.y
 
         if direction == 'up':
@@ -119,7 +133,7 @@ class Tetris(object):
         elif direction == 'down':
             y += 1
         else:
-            raise "not a valid command"
+            raise Exception(direction + " is not a valid command")
 
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
@@ -144,7 +158,10 @@ class Tetris(object):
 
 
                     if self.board[row_i + y][col_i + x] == 1:
-                        self.freeze_current_piece()
+                        if self.piece.y == 0:
+                            self.end_game()
+                        else:
+                            self.freeze_current_piece()
                         return False
 
         self.piece.x, self.piece.y = x, y
@@ -152,16 +169,82 @@ class Tetris(object):
         return True
 
 
-game = Tetris()
+if __name__ == "__main__":
+    scores = []
+    game = Tetris()
 
-while True:
-    print game.print_board()
-    next_move = raw_input("> ")
-    
-    if next_move:
-        game.__move_piece__(next_move)
+    moves = [
+            'left',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'right',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'right',
+            'right',
+            'right',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'down',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+            'right',
+    ]
 
-    game.__move_piece__('down')
-    os.system('clear')
+    scores = []
 
+    for _ in range(100):
+        for move in moves:
+            print game.print_board()
+            print sum(game.lines_scored)
+            sleep(0.01)
+
+            next_move = move
+
+            if next_move:
+                game.move_piece(next_move)
+
+            game.move_piece('down')
+            os.system('clear')
 
