@@ -3,9 +3,7 @@ from time import sleep
 import json
 import os
 import sys
-
-from collections import namedtuple
-ActionReport = namedtuple("ActionReport", "board done score score_from_action")
+from action_report import ActionReport
 
 class Tetris(object):   
     def __init__(self):
@@ -15,6 +13,7 @@ class Tetris(object):
         self.board = self.empty_board()
         self.piece = self.random_piece()
         self.lines_scored = []
+        self.total_lines = 0
         self.is_running = True
 
     def empty_board(self):
@@ -60,8 +59,8 @@ class Tetris(object):
                 self.board.pop()
                 self.board.insert(0, [0 for _ in range(10)])
 
-
         if lines_cleared:
+            self.total_lines += lines_cleared
             self.lines_scored.append(lines_cleared)
 
         self.piece = self.random_piece()
@@ -217,8 +216,7 @@ if __name__ == "__main__":
             'right',
     ]
 
-    reports = []
-    for _ in range(10000):
+    for _ in range(1000):
         for move in moves:
             # print game.print_board()
             # print sum(game.lines_scored)
@@ -228,18 +226,12 @@ if __name__ == "__main__":
             if next_move:
                 report = game.move_piece(next_move)
                 if report.done:
-                    reports.append(str(report))
                     game.start()
 
             report = game.move_piece('down')
             if report.done:
-                reports.append(str(report))
                 game.start()
 
-
             # os.system('clear')
-
-    # print reports
-
     sys.exit(0)
 
