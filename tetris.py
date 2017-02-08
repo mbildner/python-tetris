@@ -1,12 +1,17 @@
 from tetromino import Tetromino
-from random import randrange
 from time import sleep
-from copy import deepcopy
 import json
 import os
+import sys
+
+from collections import namedtuple
+ActionReport = namedtuple("ActionReport", "board done score score_from_action")
 
 class Tetris(object):   
     def __init__(self):
+        self.start()
+
+    def start(self):
         self.board = self.empty_board()
         self.piece = self.random_piece()
         self.lines_scored = []
@@ -61,24 +66,11 @@ class Tetris(object):
 
         self.piece = self.random_piece()
 
+        return lines_cleared
+
 
     def random_piece(self):
-        p = randrange(0, 7)
-
-        if p == 0:
-          return Tetromino.T()
-        elif p == 1:
-          return Tetromino.J()
-        elif p == 2:
-          return Tetromino.L()
-        elif p == 3:
-          return Tetromino.Z()
-        elif p == 4:
-          return Tetromino.S()
-        elif p == 5:
-          return Tetromino.Block()
-        elif p == 6:
-          return Tetromino.Line()
+        return Tetromino.random()
 
     def rotate_piece(self):
         new_current = (self.piece.current + 1) % len(self.piece.rotations)
@@ -112,16 +104,10 @@ class Tetris(object):
 
         return True
 
-    def end_game(self):
-        score = sum(self.lines_scored)
-
-        self.is_running = False
-        self.board = self.empty_board()
-        self.piece = self.random_piece()
-        self.lines_scored = []
-
-
     def move_piece(self, direction):
+        if not self.is_running:
+            raise Exception("You must start a game before you can move")
+        
         x, y = self.piece.x, self.piece.y
 
         if direction == 'up':
@@ -139,34 +125,33 @@ class Tetris(object):
             for col_i, col in enumerate(row):
                 if col == 1:
                     if row_i + y >= len(self.board):
-                        self.freeze_current_piece()
-                        return False
+                        score_from_freeze = self.freeze_current_piece()
+                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=score_from_freeze)
 
                     if col_i + x < 0:
-                        return False
+                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
 
                     if col_i + x >= len(self.board[0]):
-                        return False
+                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
 
 
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
-
                     if row_i >= len(self.board) - 1:
-                        return False
-
+                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
 
                     if self.board[row_i + y][col_i + x] == 1:
                         if self.piece.y == 0:
-                            self.end_game()
+                            self.is_running = False
+                            return ActionReport(board=self.board, done=True, score=sum(self.lines_scored), score_from_action=0)
                         else:
-                            self.freeze_current_piece()
-                        return False
+                            score_from_freeze = self.freeze_current_piece()
+                            return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=score_from_freeze)
 
         self.piece.x, self.piece.y = x, y
 
-        return True
+        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
 
 
 if __name__ == "__main__":
@@ -232,19 +217,29 @@ if __name__ == "__main__":
             'right',
     ]
 
-    scores = []
-
-    for _ in range(100):
+    reports = []
+    for _ in range(10000):
         for move in moves:
-            print game.print_board()
-            print sum(game.lines_scored)
-            sleep(0.01)
+            # print game.print_board()
+            # print sum(game.lines_scored)
+            # sleep(0.01)
 
             next_move = move
-
             if next_move:
-                game.move_piece(next_move)
+                report = game.move_piece(next_move)
+                if report.done:
+                    reports.append(str(report))
+                    game.start()
 
-            game.move_piece('down')
-            os.system('clear')
+            report = game.move_piece('down')
+            if report.done:
+                reports.append(str(report))
+                game.start()
+
+
+            # os.system('clear')
+
+    # print reports
+
+    sys.exit(0)
 
