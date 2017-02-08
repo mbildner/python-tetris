@@ -106,7 +106,7 @@ class Tetris(object):
     def move_piece(self, direction):
         if not self.is_running:
             raise Exception("You must start a game before you can move")
-        
+
         x, y = self.piece.x, self.piece.y
 
         if direction == 'up':
@@ -125,32 +125,32 @@ class Tetris(object):
                 if col == 1:
                     if row_i + y >= len(self.board):
                         score_from_freeze = self.freeze_current_piece()
-                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=score_from_freeze)
+                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=score_from_freeze)
 
                     if col_i + x < 0:
-                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
+                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
 
                     if col_i + x >= len(self.board[0]):
-                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
+                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
 
 
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
                     if row_i >= len(self.board) - 1:
-                        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
+                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
 
                     if self.board[row_i + y][col_i + x] == 1:
                         if self.piece.y == 0:
                             self.is_running = False
-                            return ActionReport(board=self.board, done=True, score=sum(self.lines_scored), score_from_action=0)
+                            return ActionReport(board=self.board, done=True, score=self.total_lines, score_from_action=0)
                         else:
                             score_from_freeze = self.freeze_current_piece()
-                            return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=score_from_freeze)
+                            return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=score_from_freeze)
 
         self.piece.x, self.piece.y = x, y
 
-        return ActionReport(board=self.board, done=False, score=sum(self.lines_scored), score_from_action=0)
+        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
 
 
 if __name__ == "__main__":
@@ -216,11 +216,11 @@ if __name__ == "__main__":
             'right',
     ]
 
-    for _ in range(1000):
+    for _ in range(50000):
         for move in moves:
-            # print game.print_board()
-            # print sum(game.lines_scored)
-            # sleep(0.01)
+            print game.print_board()
+            print sum(game.lines_scored)
+            sleep(0.09)
 
             next_move = move
             if next_move:
@@ -232,6 +232,6 @@ if __name__ == "__main__":
             if report.done:
                 game.start()
 
-            # os.system('clear')
+            os.system('clear')
     sys.exit(0)
 
