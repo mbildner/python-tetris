@@ -3,7 +3,9 @@ from time import sleep
 import json
 import os
 import sys
-from action_report import ActionReport
+from collections import namedtuple
+
+ActionReport = namedtuple("ActionReport", "state done score score_from_action")
 
 class Tetris(object):   
     def __init__(self):
@@ -230,8 +232,8 @@ if __name__ == "__main__":
     for _ in range(50000):
         for move in moves:
             print game.print_board()
-            print sum(game.lines_scored)
-            sleep(0.5)
+            print str.format("lines: {0}", game.total_lines)
+            sleep(0.05)
 
             next_move = move
             if next_move:
