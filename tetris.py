@@ -27,24 +27,35 @@ class Tetris(object):
         return board
 
     def print_board(self):
+        output = ""
+
+        for row in self.combine_game_state():
+            output += "\n"
+            for col in row:
+                output += str(col)
+                output += " "
+
+        return output
+
+    def combine_game_state(self):
         piece_indices = []
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
                     piece_indices.append((col_i + self.piece.x, row_i + self.piece.y))
 
-        board = ""
+        combined_state=[]
         for row_i, row in enumerate(self.board):
-            board += "\n"
+            combined_row = []
             for col_i, col in enumerate(row):
-                n = 0
                 if (col_i, row_i) in piece_indices:
-                    n += 1
+                    combined_row.append(1)
+                else:
+                    combined_row.append(col)
 
-                board += str(col + n)
-                board += " "
+            combined_state.append(combined_row)
 
-        return board
+        return combined_state
 
     def freeze_current_piece(self):
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
@@ -125,32 +136,32 @@ class Tetris(object):
                 if col == 1:
                     if row_i + y >= len(self.board):
                         score_from_freeze = self.freeze_current_piece()
-                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=score_from_freeze)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze)
 
                     if col_i + x < 0:
-                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0)
 
                     if col_i + x >= len(self.board[0]):
-                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0)
 
 
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
                     if row_i >= len(self.board) - 1:
-                        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
+                        return ActionReport(state=self.combine_game_state(), piece=self.piece, done=False, score=self.total_lines, score_from_action=0)
 
                     if self.board[row_i + y][col_i + x] == 1:
                         if self.piece.y == 0:
                             self.is_running = False
-                            return ActionReport(board=self.board, done=True, score=self.total_lines, score_from_action=0)
+                            return ActionReport(state=self.combine_game_state(), done=True, score=self.total_lines, score_from_action=0)
                         else:
                             score_from_freeze = self.freeze_current_piece()
-                            return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=score_from_freeze)
+                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze)
 
         self.piece.x, self.piece.y = x, y
 
-        return ActionReport(board=self.board, done=False, score=self.total_lines, score_from_action=0)
+        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0)
 
 
 if __name__ == "__main__":
@@ -220,7 +231,7 @@ if __name__ == "__main__":
         for move in moves:
             print game.print_board()
             print sum(game.lines_scored)
-            sleep(0.09)
+            sleep(0.5)
 
             next_move = move
             if next_move:
