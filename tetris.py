@@ -8,7 +8,9 @@ from collections import namedtuple
 ActionReport = namedtuple("ActionReport", "state done score score_from_action")
 
 class Tetris(object):   
-    def __init__(self):
+    def __init__(self, number_of_rows=16, number_of_cols=10):
+        self.number_of_rows = number_of_rows
+        self.number_of_cols = number_of_cols
         self.start()
 
     def start(self):
@@ -20,9 +22,9 @@ class Tetris(object):
 
     def empty_board(self):
         board = []
-        for y in range(20):
+        for y in range(self.number_of_rows):
             row = []
-            for x in range(10):
+            for x in range(self.number_of_cols):
                 row.append(0)
             board.append(row)
 
