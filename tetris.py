@@ -34,13 +34,18 @@ class Tetris(object):
         output = ""
 
         for row in self.combine_game_state():
-            output += "\n"
+            output += "\n|"
             for col in row:
                 if col:
                     output += 'o'
                 else: output += " "
                 # output += str(col)
                 output += " "
+            output += "|"
+
+        output += "\n"
+        for _ in range(2 + (self.number_of_cols * 2)):
+            output += "_"
 
         return output
 
@@ -182,7 +187,7 @@ if __name__ == "__main__":
     for _ in range(50000):
         for move in moves:
             print game.print_board()
-            print str.format("lines: {0}", game.total_lines)
+            print str.format("\n\n\nlines: {0}", game.total_lines)
             sleep(0.05)
 
             next_move = move
