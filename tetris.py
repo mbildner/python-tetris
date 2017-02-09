@@ -3,9 +3,10 @@ from time import sleep
 import json
 import os
 import sys
+from random import randrange
 from collections import namedtuple
 
-ActionReport = namedtuple("ActionReport", "state done score score_from_action")
+ActionReport = namedtuple("ActionReport", "state done score score_from_action did_perform_move")
 
 class Tetris(object):   
     def __init__(self, number_of_rows=16, number_of_cols=10):
@@ -37,7 +38,7 @@ class Tetris(object):
             output += "\n|"
             for col in row:
                 if col:
-                    output += 'o'
+                    output += str(col)
                 else: output += " "
                 # output += str(col)
                 output += " "
@@ -61,7 +62,7 @@ class Tetris(object):
             combined_row = []
             for col_i, col in enumerate(row):
                 if (col_i, row_i) in piece_indices:
-                    combined_row.append(1)
+                    combined_row.append(2)
                 else:
                     combined_row.append(col)
 
@@ -92,7 +93,10 @@ class Tetris(object):
 
 
     def random_piece(self):
-        return Tetromino.random()
+        return Tetromino.random(
+                y=0,
+                x=randrange(0, self.number_of_cols - 2)
+                )
 
     def rotate_piece(self):
         new_current = (self.piece.current + 1) % len(self.piece.rotations)
@@ -148,32 +152,32 @@ class Tetris(object):
                 if col == 1:
                     if row_i + y >= len(self.board):
                         score_from_freeze = self.freeze_current_piece()
-                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=False)
 
                     if col_i + x < 0:
-                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
 
                     if col_i + x >= len(self.board[0]):
-                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
 
 
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
                     if row_i >= len(self.board) - 1:
-                        return ActionReport(state=self.combine_game_state(), piece=self.piece, done=False, score=self.total_lines, score_from_action=0)
+                        return ActionReport(state=self.combine_game_state(), piece=self.piece, done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
 
                     if self.board[row_i + y][col_i + x] == 1:
                         if self.piece.y == 0:
                             self.is_running = False
-                            return ActionReport(state=self.combine_game_state(), done=True, score=self.total_lines, score_from_action=0)
+                            return ActionReport(state=self.combine_game_state(), done=True, score=self.total_lines, score_from_action=0, did_perform_move=False)
                         else:
                             score_from_freeze = self.freeze_current_piece()
-                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze)
+                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=True)
 
         self.piece.x, self.piece.y = x, y
 
-        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0)
+        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True)
 
 
 if __name__ == "__main__":
