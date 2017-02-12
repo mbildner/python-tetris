@@ -1,11 +1,12 @@
 from random import randrange
 
 class Tetromino(object):
-    def __init__(self, rotations, current, x, y):
+    def __init__(self, rotations, current, x, y, shape):
         self.rotations = rotations
         self.current = current
         self.x = x
         self.y = y
+        self.shape = shape
  
     @staticmethod
     def random(x=0, y=0):
@@ -51,7 +52,8 @@ class Tetromino(object):
                     ],
                 current=0,
                 x=x,
-                y=y
+                y=y,
+                shape='T'
                 )
 
     @staticmethod
@@ -79,7 +81,8 @@ class Tetromino(object):
                     ],
                 current=0,
                 x=x,
-                y=y
+                y=y,
+                shape='J'
                 )
 
     @staticmethod
@@ -105,7 +108,8 @@ class Tetromino(object):
                     ]],
                 current=0,
                 x=x,
-                y=y
+                y=y,
+                shape='L'
                 )
 
 
@@ -132,7 +136,8 @@ class Tetromino(object):
                     ]], 
                 current=0,
                 x=x,
-                y=y
+                y=y,
+                shape='Z'
                 )
 
 
@@ -159,7 +164,8 @@ class Tetromino(object):
                     ]], 
                 current=0,
                 x=x,
-                y=y
+                y=y,
+                shape='S'
                 )
 
     @staticmethod
@@ -183,7 +189,8 @@ class Tetromino(object):
                     ]],
                 current=0,
                 x=x,
-                y=y
+                y=y,
+                shape='Block'
                 )
 
 
@@ -210,7 +217,8 @@ class Tetromino(object):
                     ]],
                 current=0,
                 x=4,
-                y=0
+                y=0,
+                shape='Line'
                 )
 
 

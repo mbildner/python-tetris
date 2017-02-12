@@ -19,6 +19,7 @@ class Tetris(object):
         self.piece = self.random_piece()
         self.lines_scored = []
         self.total_lines = 0
+        self.moves = 0
         self.is_running = True
 
     def empty_board(self):
@@ -40,7 +41,6 @@ class Tetris(object):
                 if col:
                     output += str(col)
                 else: output += " "
-                # output += str(col)
                 output += " "
             output += "|"
 
@@ -62,7 +62,7 @@ class Tetris(object):
             combined_row = []
             for col_i, col in enumerate(row):
                 if (col_i, row_i) in piece_indices:
-                    combined_row.append(2)
+                    combined_row.append(self.piece.shape)
                 else:
                     combined_row.append(col)
 
@@ -74,11 +74,11 @@ class Tetris(object):
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
-                    self.board[row_i + self.piece.y][col_i + self.piece.x] = 1
+                    self.board[row_i + self.piece.y][col_i + self.piece.x] = self.piece.shape
 
         lines_cleared = 0
         for row_i, row in enumerate(self.board):
-            if all(col == 1 for col in row):
+            if all(col != 0 for col in row):
                 lines_cleared += 1
                 self.board.pop()
                 self.board.insert(0, [0 for _ in range(10)])
@@ -98,10 +98,10 @@ class Tetris(object):
                 x=randrange(0, self.number_of_cols - 2)
                 )
 
-    def rotate_piece(self):
+    def rotate_piece(self, kick_offset=0):
         new_current = (self.piece.current + 1) % len(self.piece.rotations)
 
-        x, y = self.piece.x, self.piece.y
+        x, y = self.piece.x + kick_offset, self.piece.y
 
         for row_i, row in enumerate(self.piece.rotations[new_current]):
             for col_i, col in enumerate(row):
@@ -113,7 +113,7 @@ class Tetris(object):
                         return False
 
                     if col_i + x >= len(self.board[0]):
-                        return False
+                        return self.rotate_piece(kick_offset=kick_offset - 1)
 
 
         for row_i, row in enumerate(self.piece.rotations[new_current]):
@@ -126,6 +126,7 @@ class Tetris(object):
                     if self.board[row_i + y][col_i + x] == 1:
                         return False
 
+        self.piece.x, self.piece.y = x, y
         self.piece.current = new_current
 
         return True
@@ -152,12 +153,15 @@ class Tetris(object):
                 if col == 1:
                     if row_i + y >= len(self.board):
                         score_from_freeze = self.freeze_current_piece()
+                        self.moves += 1
                         return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=False)
 
                     if col_i + x < 0:
+                        self.moves += 1
                         return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
 
                     if col_i + x >= len(self.board[0]):
+                        self.moves += 1
                         return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
 
 
@@ -165,18 +169,26 @@ class Tetris(object):
             for col_i, col in enumerate(row):
                 if col == 1:
                     if row_i >= len(self.board) - 1:
+                        self.moves += 1
                         return ActionReport(state=self.combine_game_state(), piece=self.piece, done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
 
-                    if self.board[row_i + y][col_i + x] == 1:
+                    if self.board[row_i + y][col_i + x] != 0:
                         if self.piece.y == 0:
                             self.is_running = False
+                            self.moves += 1
                             return ActionReport(state=self.combine_game_state(), done=True, score=self.total_lines, score_from_action=0, did_perform_move=False)
-                        else:
+                        elif direction == 'down':
                             score_from_freeze = self.freeze_current_piece()
+                            self.moves += 1
                             return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=True)
+                        else:
+                            self.moves += 1
+                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True)
+
 
         self.piece.x, self.piece.y = x, y
 
+        self.moves += 1
         return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True)
 
 
