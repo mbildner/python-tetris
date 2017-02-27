@@ -6,6 +6,10 @@ import sys
 from random import randrange
 from collections import namedtuple
 
+from itertools import cycle
+
+import numpy as np
+
 ActionReport = namedtuple("ActionReport", "state done score score_from_action did_perform_move")
 
 class Tetris(object):   
@@ -62,7 +66,8 @@ class Tetris(object):
             combined_row = []
             for col_i, col in enumerate(row):
                 if (col_i, row_i) in piece_indices:
-                    combined_row.append(self.piece.shape)
+                    #combined_row.append(self.piece.shape)
+                    combined_row.append(1)
                 else:
                     combined_row.append(col)
 
@@ -74,7 +79,8 @@ class Tetris(object):
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
-                    self.board[row_i + self.piece.y][col_i + self.piece.x] = self.piece.shape
+                    #self.board[row_i + self.piece.y][col_i + self.piece.x] = self.piece.shape
+                    self.board[row_i + self.piece.y][col_i + self.piece.x] = 1
 
         lines_cleared = 0
         for row_i, row in enumerate(self.board):
@@ -191,6 +197,19 @@ class Tetris(object):
         self.moves += 1
         return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True)
 
+steps_til_drop_gen = cycle(reversed(range(4)))
+def step_forward(game, next_move):
+    ''' keep track of number of moves to drop'''
+    steps_till_drop = next(steps_til_drop_gen)
+    report = game.move_piece(next_move)
+    if report.done:
+        return report
+    elif steps_till_drop == 0: #automatic drop
+        new_report = game.move_piece('down')
+        if new_report.done:
+            return new_report
+
+    return report
 
 if __name__ == "__main__":
     scores = []
@@ -199,7 +218,6 @@ if __name__ == "__main__":
     moves = [
             'left', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'right', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right',
     ]
-
     for _ in range(50000):
         for move in moves:
             print game.print_board()
