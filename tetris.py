@@ -1,14 +1,11 @@
 from tetromino import Tetromino
 from time import sleep
-import json
 import os
 import sys
 from random import randrange
 from collections import namedtuple
 
 from itertools import cycle
-
-import numpy as np
 
 ActionReport = namedtuple("ActionReport", "state done score score_from_action did_perform_move")
 
@@ -220,8 +217,8 @@ if __name__ == "__main__":
     ]
     for _ in range(50000):
         for move in moves:
-            print game.print_board()
-            print str.format("\n\n\nlines: {0}", game.total_lines)
+            print(game.print_board())
+            print(str.format("\n\n\nlines: {0}", game.total_lines))
             sleep(0.05)
 
             next_move = move
