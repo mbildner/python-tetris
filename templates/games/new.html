@@ -1,0 +1,99 @@
+<!doctype html>
+<head>
+  <title>Tetris</title>
+  <style>
+    .col {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        background: grey;
+    }
+
+    .occuppied {
+      background: red;
+    }
+
+    .row {
+    }
+  </style>
+</head>
+<body>
+  <div id="game-display"></div>
+
+  <script>
+const root = document.getElementById('game-display')
+
+const initBoard = (board) => {
+  for (let i=0; i<=16; i++) {
+    let row = document.createElement('div')
+    row.classList.add('row')
+    for (let j=0; j<=10; j++) {
+      let col = document.createElement('div')
+      col.classList.add('col')
+      row.appendChild(col)
+    }
+    board.appendChild(row)
+  }
+}
+
+initBoard(root)
+
+const render = (gameState, board) => {
+  gameState.forEach((row, i) => {
+    row.forEach((value, j) => {
+
+      const element = board.children[i].children[j]
+
+      if (value) {
+        element.classList.add('occuppied')
+      } else {
+        element.classList.remove('occuppied')
+      }
+    })
+  })
+}
+
+const doMove = direction => {
+  fetch(`/game/move/${direction}`, { method: 'POST' })
+    .then(response => response.text())
+    .then(json => JSON.parse(json))
+    .then(state => { render(state, root) })
+    .catch(e => {
+      console.log('error!')
+      console.log(e)
+    })
+}
+
+const directionsDict = {
+  37: 'left',
+  38: 'up',
+  39: 'right',
+  40: 'down'
+}
+
+document.body.addEventListener('keydown', (event) => {
+  const direction = directionsDict[event.which]
+
+  if (!direction) return
+
+  event.preventDefault()
+
+  doMove(direction)
+})
+
+console.log('starting')
+fetch('/game/start', { method: 'POST' })
+.then(response => response.text())
+.then(json => JSON.parse(json))
+.then(state => {
+  console.log('rendering')
+  console.log(state)
+  render(state, root)
+})
+.catch(e => {
+  console.log('error!')
+  console.log(e)
+})
+  </script>
+</body>
+
