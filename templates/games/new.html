@@ -24,10 +24,10 @@
 const root = document.getElementById('game-display')
 
 const initBoard = (board) => {
-  for (let i=0; i<=16; i++) {
+  for (let i=0; i<16; i++) {
     let row = document.createElement('div')
     row.classList.add('row')
-    for (let j=0; j<=10; j++) {
+    for (let j=0; j<10; j++) {
       let col = document.createElement('div')
       col.classList.add('col')
       row.appendChild(col)
@@ -81,19 +81,21 @@ document.body.addEventListener('keydown', (event) => {
   doMove(direction)
 })
 
-console.log('starting')
-fetch('/game/start', { method: 'POST' })
-.then(response => response.text())
-.then(json => JSON.parse(json))
-.then(state => {
-  console.log('rendering')
-  console.log(state)
-  render(state, root)
-})
-.catch(e => {
-  console.log('error!')
-  console.log(e)
-})
+const initGame = (board) => {
+  fetch('/game/start', { method: 'POST' })
+    .then(response => response.text())
+    .then(json => JSON.parse(json))
+    .then(state => {
+      render(state, root)
+    })
+    .catch(e => {
+      console.log('error!')
+      console.log(e)
+    })
+  }
+
+  initGame(root)
+
   </script>
 </body>
 
