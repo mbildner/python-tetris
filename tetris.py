@@ -3,13 +3,12 @@ from time import sleep
 import os
 import sys
 from random import randrange
-from collections import namedtuple
+
+from action_report import ActionReport
 
 from itertools import cycle
 
 import numpy as np
-
-ActionReport = namedtuple("ActionReport", "state done score score_from_action did_perform_move")
 
 class Tetris(object):
     def __init__(self, number_of_rows=16, number_of_cols=10):
