@@ -55,7 +55,7 @@ class Tetris(object):
             output += "\n|"
             for col in row:
                 if col:
-                    output += str(col)
+                    output += str(int(col))
                 else: output += " "
                 output += " "
             output += "|"
