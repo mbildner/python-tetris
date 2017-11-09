@@ -4,6 +4,7 @@ import os
 import sys
 from random import randrange
 
+from board_printer import BoardPrinter
 from action_report import ActionReport
 
 from itertools import cycle
@@ -11,9 +12,10 @@ from itertools import cycle
 import numpy as np
 
 class Tetris(object):
-    def __init__(self, number_of_rows=16, number_of_cols=10):
+    def __init__(self, number_of_rows=16, number_of_cols=10, printer=BoardPrinter(number_of_cols=10)):
         self.number_of_rows = number_of_rows
         self.number_of_cols = number_of_cols
+        self.printer = printer
         self.start()
 
     def start(self):
@@ -48,22 +50,7 @@ class Tetris(object):
         return combined_state
 
     def print_board(self):
-        output = ""
-
-        for row in self.combine_game_state():
-            output += "\n|"
-            for col in row:
-                if col:
-                    output += str(int(col))
-                else: output += " "
-                output += " "
-            output += "|"
-
-        output += "\n"
-        for _ in range(2 + (self.number_of_cols * 2)):
-            output += "_"
-
-        return output
+        return self.printer.print_game_state(self.combine_game_state())
 
     def freeze_current_piece(self):
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
