@@ -17,7 +17,7 @@ def game_state():
 
 @app.route("/game/move/<direction>", methods=['POST'])
 def move_piece(direction):
-    if direction not in ['up', 'down', 'left', 'right']:
+    if direction not in ['up', 'down', 'left', 'right', 'drop']:
         raise 'Move is invalid'
 
     global game, action_report

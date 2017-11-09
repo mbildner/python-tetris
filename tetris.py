@@ -116,6 +116,17 @@ class Tetris(object):
 
         return True
 
+    def hard_drop(self):
+        if not self.is_running:
+            raise Exception("You must start a game before you can move")
+
+        original_piece = self.piece
+        moves_stack = [self.move_piece('down')]
+        while self.piece is original_piece:
+            moves_stack.append(self.move_piece('down'))
+
+        return moves_stack[-1]
+
     def move_piece(self, direction):
         if not self.is_running:
             raise Exception("You must start a game before you can move")
@@ -130,6 +141,9 @@ class Tetris(object):
             x += 1
         elif direction == 'down':
             y += 1
+        elif direction == 'drop':
+            return self.hard_drop()
+
         else:
             raise Exception(direction + " is not a valid command")
 
