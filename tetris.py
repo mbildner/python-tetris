@@ -62,8 +62,11 @@ class Tetris(object):
         for row_i, row in enumerate(self.board):
             if all(col != 0 for col in row):
                 lines_cleared += 1
-                self.board.pop()
-                self.board.insert(0, [0 for _ in range(10)])
+                self.board = np.append(
+                        [[0 for _ in range(10)]],
+                        self.board[:-1],
+                        axis=0
+                        )
 
         if lines_cleared:
             self.total_lines += lines_cleared
