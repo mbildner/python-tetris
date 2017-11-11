@@ -1,4 +1,5 @@
 from random import randrange
+import copy
 
 class Tetromino(object):
     def __init__(self, rotations, current, x, y, shape):
@@ -7,7 +8,30 @@ class Tetromino(object):
         self.x = x
         self.y = y
         self.shape = shape
- 
+
+    def clone(self):
+        return Tetromino(
+                self.rotations,
+                self.current,
+                self.x,
+                self.y,
+                self.shape
+                )
+
+    def __str__(self):
+        h = ''
+        for row in self.rotations[self.current]:
+            for square in row:
+                if square == 1:
+                    h += '*'
+                else:
+                    h += ' '
+
+            h += '\n'
+
+        return h
+
+
     @staticmethod
     def random(x=0, y=0):
         p = randrange(0, 7)

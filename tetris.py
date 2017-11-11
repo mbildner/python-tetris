@@ -3,6 +3,7 @@ from time import sleep
 import os
 import sys
 from random import randrange
+import copy
 
 from board_printer import BoardPrinter
 from action_report import ActionReport
@@ -25,6 +26,27 @@ class Tetris(object):
         self.total_lines = 0
         self.moves = 0
         self.is_running = True
+
+
+    def save(self):
+        number_of_rows = self.number_of_rows
+        number_of_cols = self.number_of_cols
+        piece = self.piece.clone()
+        board = copy.deepcopy(self.board)
+        lines_scored = copy.deepcopy(self.lines_scored)
+        moves = self.moves
+        total_lines = self.total_lines
+        is_running = self.is_running
+
+        game = Tetris(number_of_rows, number_of_cols)
+        game.piece = piece
+        game.board = board
+        game.lines_scored = lines_scored
+        game.moves = moves
+        game.total_lines = total_lines
+        game.is_running = is_running
+
+        return game
 
     def empty_board(self):
         return np.zeros([self.number_of_rows, self.number_of_cols])

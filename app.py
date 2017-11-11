@@ -11,6 +11,11 @@ action_report = None
 def new_game():
     return render_template('games/new.html')
 
+@app.route("/game/save", methods=['POST'])
+def save_game():
+    print(game.save())
+    return 'done'
+
 @app.route("/game/state")
 def game_state():
     return json.dumps(action_report.state)

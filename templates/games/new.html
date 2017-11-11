@@ -97,6 +97,11 @@ const initGame = (board) => {
 
   initGame(root)
 
+const saveGame = () => {
+  fetch('/game/save', { method: 'POST' })
+    .then(response => response.text())
+    .then(result => console.log(result))
+}
   </script>
 </body>
 
