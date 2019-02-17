@@ -98,6 +98,19 @@ class Tetris(object):
 
         return lines_cleared
 
+    def trapped_space(self):
+        total_empty = 0
+
+        rotated = np.rot90(self.board)
+
+        for column in rotated:
+            first_full = np.where(column > 0)[0]
+
+            if first_full.size > 0:
+                empties = column[np.where(column[first_full[0]:] == 0)]
+                total_empty += len(empties)
+
+        return total_empty
 
     def random_piece(self):
         return Tetromino.random(
