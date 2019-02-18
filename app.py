@@ -34,7 +34,7 @@ def move_piece(direction):
 def start_game():
     global game
 
-    game = Tetris()
+    game = Tetris(shadow=True)
     game.start()
     
     global action_report

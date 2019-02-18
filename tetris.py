@@ -13,10 +13,11 @@ from itertools import cycle
 import numpy as np
 
 class Tetris(object):
-    def __init__(self, number_of_rows=16, number_of_cols=10, printer=BoardPrinter(number_of_cols=10)):
+    def __init__(self, number_of_rows=16, number_of_cols=10, shadow=False, printer=BoardPrinter(number_of_cols=10)):
         self.number_of_rows = number_of_rows
         self.number_of_cols = number_of_cols
         self.printer = printer
+        self.shadow=shadow
         self.start()
 
     def start(self):
@@ -51,25 +52,36 @@ class Tetris(object):
     def empty_board(self):
         return np.zeros([self.number_of_rows, self.number_of_cols])
 
-    def combine_game_state(self):
+    def combine_piece_with_board(self, board, piece, occuppied_indicator=1):
         piece_indices = []
-        for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
+        for row_i, row in enumerate(piece.rotations[piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
-                    piece_indices.append((col_i + self.piece.x, row_i + self.piece.y))
+                    piece_indices.append((col_i + piece.x, row_i + piece.y))
 
         combined_state=[]
-        for row_i, row in enumerate(self.board):
+        for row_i, row in enumerate(board):
             combined_row = []
             for col_i, col in enumerate(row):
                 if (col_i, row_i) in piece_indices:
-                    combined_row.append(1)
+                    combined_row.append(occuppied_indicator)
                 else:
                     combined_row.append(col)
 
             combined_state.append(combined_row)
 
         return combined_state
+
+    def combine_game_state(self):
+        combined = self.combine_piece_with_board(self.board, self.piece)
+
+        if not self.is_running or not self.shadow:
+            return combined
+
+        shadow_piece = self.shadow_piece()
+        state_with_shadow = self.combine_piece_with_board(combined, shadow_piece, occuppied_indicator=2)
+        return state_with_shadow
+
 
     def print_board(self):
         return self.printer.print_game_state(self.combine_game_state())
@@ -152,9 +164,6 @@ class Tetris(object):
         return True
 
     def hard_drop(self):
-        if not self.is_running:
-            raise Exception("You must start a game before you can move")
-
         original_piece = self.piece
         moves_stack = [self.move_piece('down')]
         while self.piece is original_piece:
@@ -182,21 +191,23 @@ class Tetris(object):
         else:
             raise Exception(direction + " is not a valid command")
 
+        piece_before_processing = self.piece
+
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
             for col_i, col in enumerate(row):
                 if col == 1:
                     if row_i + y >= len(self.board):
                         score_from_freeze = self.freeze_current_piece()
                         self.moves += 1
-                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=False)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=False, final_piece_coordinates=piece_before_processing)
 
                     if col_i + x < 0:
                         self.moves += 1
-                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False, final_piece_coordinates=piece_before_processing)
 
                     if col_i + x >= len(self.board[0]):
                         self.moves += 1
-                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
+                        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=False, final_piece_coordinates=piece_before_processing)
 
 
         for row_i, row in enumerate(self.piece.rotations[self.piece.current]):
@@ -204,52 +215,49 @@ class Tetris(object):
                 if col == 1:
                     if row_i >= len(self.board) - 1:
                         self.moves += 1
-                        return ActionReport(state=self.combine_game_state(), piece=self.piece, done=False, score=self.total_lines, score_from_action=0, did_perform_move=False)
+                        return ActionReport(state=self.combine_game_state(), piece=self.piece, done=False, score=self.total_lines, score_from_action=0, did_perform_move=False, final_piece_coordinates=piece_before_processing)
 
                     if self.board[row_i + y][col_i + x] != 0:
                         if self.piece.y == 0:
                             self.is_running = False
                             self.moves += 1
-                            return ActionReport(state=self.combine_game_state(), done=True, score=self.total_lines, score_from_action=0, did_perform_move=False)
+                            return ActionReport(state=self.combine_game_state(), done=True, score=self.total_lines, score_from_action=0, did_perform_move=False, final_piece_coordinates=piece_before_processing)
                         elif direction == 'down':
                             score_from_freeze = self.freeze_current_piece()
                             self.moves += 1
-                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=True)
+                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=score_from_freeze, did_perform_move=True, final_piece_coordinates=piece_before_processing)
                         else:
                             self.moves += 1
-                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True)
+                            return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True, final_piece_coordinates=piece_before_processing)
 
 
         self.piece.x, self.piece.y = x, y
 
         self.moves += 1
-        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True)
+        return ActionReport(state=self.combine_game_state(), done=False, score=self.total_lines, score_from_action=0, did_perform_move=True, final_piece_coordinates=piece_before_processing)
 
-steps_til_drop_gen = cycle(reversed(range(4)))
-def step_forward(game, next_move):
-    ''' keep track of number of moves to drop'''
-    steps_till_drop = next(steps_til_drop_gen)
-    report = game.move_piece(next_move)
-    if report.done:
-        return report
-    elif steps_till_drop == 0: #automatic drop
-        new_report = game.move_piece('down')
-        if new_report.done:
-            return new_report
+    def shadow_piece(self):
+        shadow_game = self.save()
 
-    return report
+        shadow_game.shadow = False
+
+        post_drop_report = shadow_game.hard_drop()
+        return post_drop_report.final_piece_coordinates
 
 if __name__ == "__main__":
     scores = []
-    game = Tetris()
+    game = Tetris(shadow=True)
 
-    moves = [
-            'left', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'right', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right',
-    ]
+    # moves = [
+            # 'left', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'right', 'right', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right',
+            # ]
+
+    moves = ['left']
     for _ in range(50000):
         for move in moves:
             print(game.print_board())
             print(str.format("\n\n\nlines: {0}", game.total_lines))
+
             sleep(0.05)
 
             next_move = move
